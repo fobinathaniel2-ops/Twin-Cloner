@@ -665,7 +665,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
 
             PackageInfo packageArchiveInfo = BlackBoxCore.getPackageManager().getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
             if (packageArchiveInfo == null) {
-                return result.installError("getPackageArchiveInfo error.Please check whether APK is normal.");
+                return result.installError("getPackageArchiveInfo failed for " + apkFile.getAbsolutePath() + ". The selected APK is not a readable standalone package.");
             }
 
             
@@ -690,7 +690,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             }
             PackageParser.Package aPackage = parserApk(apkFile.getAbsolutePath());
             if (aPackage == null) {
-                return result.installError("parser apk error.");
+                return result.installError(packageName, "PackageParser failed for " + apkFile.getAbsolutePath() + ". This usually means the APK format, split layout, or manifest could not be parsed.");
             }
             result.packageName = aPackage.packageName;
 
@@ -704,7 +704,7 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
 
             int i = BPackageInstallerService.get().installPackageAsUser(bPackageSettings, userId);
             if (i < 0) {
-                return result.installError("install apk error.");
+                return result.installError(packageName, "Virtual installer failed at executor stage (code=" + i + "). Package=" + packageName + ", apk=" + apkFile.getAbsolutePath() + ", systemInstall=" + option.isFlag(InstallOption.FLAG_SYSTEM) + ". Check BPackageInstallerService/CopyExecutor logs for the exact failing step.");
             }
             synchronized (mPackages) {
                 bPackageSettings.setInstalled(true, userId);
@@ -716,7 +716,8 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             onPackageInstalled(bPackageSettings.pkg.packageName, userId);
             return result;
         } catch (Throwable t) {
-            t.printStackTrace();
+            Slog.e(TAG, "Clone installation crashed for " + (result.packageName == null ? "unknown" : result.packageName) + ": " + t.getClass().getName() + ": " + t.getMessage(), t);
+            result.installError(result.packageName, "Clone installation exception: " + t.getClass().getSimpleName() + ": " + t.getMessage());
         } finally {
             if (apkFile != null && option.isFlag(InstallOption.FLAG_URI_FILE)) {
                 FileUtils.deleteDir(apkFile);
