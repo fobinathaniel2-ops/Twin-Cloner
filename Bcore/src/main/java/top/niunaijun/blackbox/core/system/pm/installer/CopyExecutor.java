@@ -9,6 +9,7 @@ import top.niunaijun.blackbox.core.system.pm.BPackageSettings;
 import top.niunaijun.blackbox.entity.pm.InstallOption;
 import top.niunaijun.blackbox.utils.FileUtils;
 import top.niunaijun.blackbox.utils.NativeUtils;
+import top.niunaijun.blackbox.utils.Slog;
 
 
 public class CopyExecutor implements Executor {
@@ -20,8 +21,8 @@ public class CopyExecutor implements Executor {
                 NativeUtils.copyNativeLib(new File(ps.pkg.baseCodePath), BEnvironment.getAppLibDir(ps.pkg.packageName));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
+            Slog.e("CopyExecutor", "Native library extraction failed for " + ps.pkg.packageName + " from " + ps.pkg.baseCodePath + ": " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+            return -11;
         }
         if (option.isFlag(InstallOption.FLAG_STORAGE)) {
             
@@ -40,8 +41,8 @@ public class CopyExecutor implements Executor {
                 
                 ps.pkg.baseCodePath = newFile.getAbsolutePath();
             } catch (IOException e) {
-                e.printStackTrace();
-                return -1;
+                Slog.e("CopyExecutor", "APK copy failed for " + ps.pkg.packageName + " from " + origFile + " to " + newFile + ": " + e.getMessage(), e);
+                return -12;
             }
         } else if (option.isFlag(InstallOption.FLAG_SYSTEM)) {
             
