@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Apply Twin patch
+        run: unzip -o twin_patch.zip
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
       - uses: android-actions/setup-android@v3
@@ -14,5 +16,5 @@ jobs:
       - run: chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: blackbox-debug
+          name: twin-debug
           path: app/build/outputs/apk/debug/*.apk
