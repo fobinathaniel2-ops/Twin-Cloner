@@ -8,6 +8,7 @@ jobs:
 
       - name: Apply Twin patch
         run: |
+          find app/src/main/res -type f \( -name "ic_launcher.*" -o -name "ic_launcher_round.*" \) -delete
           unzip -o twin_patch.zip
           sed -i 's|android:label="Twin"|android:label="Twin" tools:replace="android:label"|' app/src/main/AndroidManifest.xml
 
@@ -22,7 +23,12 @@ jobs:
 
       - run: chmod +x gradlew && ./gradlew assembleDebug
 
+      - name: Name it twin.apk
+        run: |
+          mkdir out
+          cp app/build/outputs/apk/debug/*universal-debug.apk out/twin.apk
+
       - uses: actions/upload-artifact@v4
         with:
-          name: twin-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: twin
+          path: out/twin.apk
