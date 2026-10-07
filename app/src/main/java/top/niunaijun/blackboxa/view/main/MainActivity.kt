@@ -428,7 +428,3 @@ class MainActivity : LoadingActivity() {
             return true
         } catch (e: Exception) {
             Log.e(TAG, "Error handling menu item selection: ${e.message}")
-            return false
-        }
-    }
-}
