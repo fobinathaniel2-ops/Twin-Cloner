@@ -38,7 +38,7 @@ class ListActivity : BaseActivity() {
         mAdapter =
                 RVAdapter<InstalledAppBean>(this, ListAdapter())
                         .bind(viewBinding.recyclerView)
-                        .setItemClickListener { _, item, _ -> finishWithResult(item.packageName) }
+                        .setItemClickListener { _, item, _ -> finishWithPackageResult(item.packageName) }
 
         viewBinding.recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -109,8 +109,18 @@ class ListActivity : BaseActivity() {
                 it?.run { finishWithResult(it.toString()) }
             }
 
+    private fun finishWithPackageResult(packageName: String) {
+        intent.putExtra("packageName", packageName)
+        intent.putExtra("source", packageName)
+        setResult(Activity.RESULT_OK, intent)
+        finish()
+    }
+
     private fun finishWithResult(source: String) {
         intent.putExtra("source", source)
+        if (!source.contains(":")) {
+            // no-op: package name is supplied by the installed-app click path below
+        }
         setResult(Activity.RESULT_OK, intent)
         val imm: InputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         window.peekDecorView()?.run { imm.hideSoftInputFromWindow(windowToken, 0) }
